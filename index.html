@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shrewd Wave · To-do</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#EEF3F6; --surface:#FFFFFF; --ink:#14283B; --muted:#6B7C8C; --line:#DCE5EB;
+  --wave:#1F7A8C; --wave-soft:#CFE5EA; --on-wave:#FFFFFF;
+  --high:#D9573B; --med:#E0A030; --low:#4E9F7D;
+  --shadow:0 1px 2px rgba(20,40,59,.06),0 8px 24px rgba(20,40,59,.06);
+  --display:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;
+  --body:"Figtree","Segoe UI",system-ui,-apple-system,sans-serif;
+}
+@media (prefers-color-scheme:dark){
+  :root{--bg:#0D1822; --surface:#14232F; --ink:#E6EEF3; --muted:#8CA0B0; --line:#223646;
+    --wave:#3FA9BC; --wave-soft:#1B3A47; --on-wave:#06141C; --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.25);}
+}
+*{box-sizing:border-box;margin:0}
+html{background:var(--bg)}
+body{font-family:var(--body);color:var(--ink);background:var(--bg);min-height:100vh;padding:40px 16px 64px;line-height:1.5}
+.app{max-width:640px;margin:0 auto}
+
+/* Tide: the water level rises as tasks are completed */
+.tide{position:relative;overflow:hidden;height:150px;border-radius:20px;background:var(--wave-soft);box-shadow:var(--shadow);isolation:isolate}
+.water{position:absolute;left:0;right:0;bottom:0;height:0%;background:var(--wave);transition:height .8s cubic-bezier(.3,.7,.2,1);z-index:0}
+.water::before{content:"";position:absolute;left:0;right:0;top:-14px;height:15px;background:
+  url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 15' preserveAspectRatio='none'%3E%3Cpath d='M0 8 Q15 0 30 8 T60 8 T90 8 T120 8 V15 H0Z' fill='%231F7A8C'/%3E%3C/svg%3E") repeat-x;
+  background-size:120px 15px;animation:drift 6s linear infinite}
+@media (prefers-color-scheme:dark){.water::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 15' preserveAspectRatio='none'%3E%3Cpath d='M0 8 Q15 0 30 8 T60 8 T90 8 T120 8 V15 H0Z' fill='%233FA9BC'/%3E%3C/svg%3E")}}
+@keyframes drift{to{background-position-x:120px}}
+.tide-text{position:relative;z-index:1;height:100%;padding:22px 26px;display:flex;flex-direction:column;justify-content:space-between;mix-blend-mode:normal}
+.tide h1{font-family:var(--display);font-weight:700;font-size:2rem;letter-spacing:-.02em;line-height:1.1;color:var(--ink)}
+.tide .date{color:var(--ink);opacity:.7;font-size:.95rem;margin-top:2px}
+.tide .count{font-family:var(--display);font-weight:500;font-size:1.05rem;color:var(--ink);align-self:flex-start;background:var(--surface);padding:4px 12px;border-radius:999px}
+
+/* Add form */
+.add{display:flex;gap:8px;margin:20px 0 14px;background:var(--surface);padding:8px;border-radius:16px;box-shadow:var(--shadow);border:1px solid var(--line)}
+.add:focus-within{border-color:var(--wave)}
+.add input[type=text]{flex:1;min-width:0;border:0;background:transparent;font:inherit;font-size:1rem;color:var(--ink);padding:10px 12px;outline:none}
+.add input::placeholder{color:var(--muted)}
+select{font:inherit;font-size:.9rem;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:0 10px;cursor:pointer}
+button{font:inherit;cursor:pointer}
+.btn{border:0;background:var(--wave);color:var(--on-wave);font-weight:600;padding:0 20px;border-radius:10px;transition:filter .15s}
+.btn:hover{filter:brightness(1.08)}
+:focus-visible{outline:2px solid var(--wave);outline-offset:2px}
+
+/* Filters */
+.bar{display:flex;justify-content:space-between;align-items:center;margin:0 4px 10px;gap:12px;flex-wrap:wrap}
+.tabs{display:flex;gap:4px;background:var(--surface);padding:4px;border-radius:12px;border:1px solid var(--line)}
+.tab{border:0;background:transparent;color:var(--muted);padding:6px 14px;border-radius:8px;font-weight:500;font-size:.9rem}
+.tab[aria-pressed=true]{background:var(--wave);color:var(--on-wave)}
+.link{border:0;background:none;color:var(--muted);font-size:.9rem;text-decoration:underline;text-underline-offset:3px}
+.link:hover{color:var(--ink)}
+.link[disabled]{opacity:.4;cursor:default;text-decoration:none}
+
+/* List */
+ul{list-style:none;padding:0;display:grid;gap:8px}
+li{display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px;box-shadow:var(--shadow);animation:pop .22s ease-out}
+@keyframes pop{from{opacity:0;transform:translateY(-6px)}}
+.check{appearance:none;flex:none;width:22px;height:22px;border:2px solid var(--line);border-radius:50%;cursor:pointer;display:grid;place-content:center;transition:.15s;background:transparent}
+.check:hover{border-color:var(--wave)}
+.check:checked{background:var(--wave);border-color:var(--wave)}
+.check:checked::after{content:"";width:5px;height:10px;border:solid var(--on-wave);border-width:0 2px 2px 0;transform:rotate(45deg) translate(-1px,-1px)}
+.dot{flex:none;width:8px;height:8px;border-radius:50%}
+.dot.high{background:var(--high)}.dot.medium{background:var(--med)}.dot.low{background:var(--low)}
+.text{flex:1;min-width:0;overflow-wrap:anywhere;cursor:text}
+.done .text{color:var(--muted);text-decoration:line-through}
+.edit{flex:1;font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--wave);border-radius:8px;padding:4px 8px}
+.del{flex:none;border:0;background:none;color:var(--muted);width:30px;height:30px;border-radius:8px;font-size:1.2rem;line-height:1}
+.del:hover{background:var(--bg);color:var(--high)}
+.empty{text-align:center;color:var(--muted);padding:40px 16px;background:var(--surface);border:1px dashed var(--line);border-radius:14px}
+.empty strong{display:block;font-family:var(--display);font-size:1.15rem;color:var(--ink);margin-bottom:2px}
+.hint{text-align:center;color:var(--muted);font-size:.82rem;margin-top:18px}
+@media (max-width:480px){.add{flex-wrap:wrap}.add input[type=text]{flex-basis:100%}.add select,.add .btn{flex:1;height:42px}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<main class="app">
+  <header class="tide">
+    <div class="water" id="water"></div>
+    <div class="tide-text">
+      <div>
+        <h1>Today’s tasks</h1>
+        <p class="date" id="date"></p>
+      </div>
+      <span class="count" id="count" aria-live="polite"></span>
+    </div>
+  </header>
+
+  <form class="add" id="form">
+    <input type="text" id="input" placeholder="Add a task" maxlength="200" autocomplete="off" aria-label="New task">
+    <select id="priority" aria-label="Priority">
+      <option value="low">Low</option>
+      <option value="medium" selected>Medium</option>
+      <option value="high">High</option>
+    </select>
+    <button class="btn" type="submit">Add task</button>
+  </form>
+
+  <div class="bar">
+    <div class="tabs" role="group" aria-label="Filter tasks">
+      <button class="tab" data-f="all" aria-pressed="true">All</button>
+      <button class="tab" data-f="active" aria-pressed="false">Active</button>
+      <button class="tab" data-f="done" aria-pressed="false">Done</button>
+    </div>
+    <button class="link" id="clear">Clear completed</button>
+  </div>
+
+  <ul id="list"></ul>
+  <p class="hint">Click a task to edit it. Press Enter to save, Esc to cancel.</p>
+</main>
+
+<script>
+(() => {
+  const KEY = 'shrewd-wave-todos';
+  const $ = id => document.getElementById(id);
+  const list = $('list'), input = $('input'), prio = $('priority');
+  let todos = [], filter = 'all';
+
+  try { todos = JSON.parse(localStorage.getItem(KEY)) || []; } catch { todos = []; }
+  const save = () => { try { localStorage.setItem(KEY, JSON.stringify(todos)); } catch {} };
+
+  $('date').textContent = new Date().toLocaleDateString(undefined, { weekday:'long', month:'long', day:'numeric' });
+
+  function render() {
+    const done = todos.filter(t => t.done).length, total = todos.length;
+    $('water').style.height = (total ? Math.round(done / total * 100) : 0) + '%';
+    $('count').textContent = total ? `${done} of ${total} done` : 'Nothing planned yet';
+    $('clear').disabled = !done;
+
+    const shown = todos.filter(t => filter === 'all' || (filter === 'done') === t.done);
+    list.innerHTML = '';
+    if (!shown.length) {
+      const e = document.createElement('li');
+      e.className = 'empty';
+      e.style.display = 'block';
+      e.innerHTML = filter === 'all'
+        ? '<strong>Your list is clear</strong>Add your first task above.'
+        : `<strong>No ${filter} tasks</strong>${filter === 'done' ? 'Completed tasks will show up here.' : 'Everything is done.'}`;
+      list.appendChild(e);
+      return;
+    }
+    shown.forEach(t => list.appendChild(row(t)));
+  }
+
+  function row(t) {
+    const li = document.createElement('li');
+    if (t.done) li.className = 'done';
+
+    const cb = document.createElement('input');
+    cb.type = 'checkbox'; cb.className = 'check'; cb.checked = t.done;
+    cb.setAttribute('aria-label', 'Mark "' + t.text + '" as done');
+    cb.onchange = () => { t.done = cb.checked; save(); render(); };
+
+    const dot = document.createElement('span');
+    dot.className = 'dot ' + t.priority; dot.title = t.priority + ' priority';
+
+    const txt = document.createElement('span');
+    txt.className = 'text'; txt.textContent = t.text; txt.tabIndex = 0;
+    txt.onclick = () => edit(t, txt);
+    txt.onkeydown = e => { if (e.key === 'Enter') edit(t, txt); };
+
+    const del = document.createElement('button');
+    del.className = 'del'; del.innerHTML = '&times;';
+    del.setAttribute('aria-label', 'Delete "' + t.text + '"');
+    del.onclick = () => { todos = todos.filter(x => x.id !== t.id); save(); render(); };
+
+    li.append(cb, dot, txt, del);
+    return li;
+  }
+
+  function edit(t, el) {
+    const f = document.createElement('input');
+    f.className = 'edit'; f.value = t.text; f.maxLength = 200;
+    el.replaceWith(f); f.focus(); f.select();
+    let finished = false;
+    const finish = commit => {
+      if (finished) return; finished = true;
+      const v = f.value.trim();
+      if (commit && v) { t.text = v; save(); }
+      render();
+    };
+    f.onkeydown = e => { if (e.key === 'Enter') finish(true); if (e.key === 'Escape') finish(false); };
+    f.onblur = () => finish(true);
+  }
+
+  $('form').onsubmit = e => {
+    e.preventDefault();
+    const text = input.value.trim();
+    if (!text) { input.focus(); return; }
+    todos.unshift({ id: Date.now() + Math.random(), text, priority: prio.value, done: false });
+    input.value = ''; save(); render(); input.focus();
+  };
+
+  document.querySelectorAll('.tab').forEach(b => b.onclick = () => {
+    filter = b.dataset.f;
+    document.querySelectorAll('.tab').forEach(x => x.setAttribute('aria-pressed', x === b));
+    render();
+  });
+
+  $('clear').onclick = () => { todos = todos.filter(t => !t.done); save(); render(); };
+
+  render();
+})();
+</script>
+</body>
+</html>
